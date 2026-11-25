@@ -8,6 +8,7 @@ export const DestinationCreatePage: FC = () => {
 
   const handleCreated = () => {
     router.push('/')
+    router.refresh()
   }
 
   const handleCancel = () => {

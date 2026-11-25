@@ -5,6 +5,8 @@ import { promises as fs } from 'fs'
 import { createNextHttpError } from '@/shared-core/http-client/create-next-http-error'
 import type { Id } from '@/shared-core/types/id'
 import type { DestinationDto } from '@/features/destination/infrastructure/destination-dto'
+import { getDomainEventEmitter } from '@/core/events/domain-event-emitter'
+import { DestinationCreatedEvent } from '@/features/destination/domain/destination-created.event'
 
 async function readDestinationsFromFile(): Promise<DestinationDto[]> {
   const jsonDirectory = path.join(process.cwd(), 'data')
@@ -77,6 +79,11 @@ export async function POST(request: NextRequest) {
     destinations.push(destinationWithId)
 
     await writeToFile(destinations)
+
+    getDomainEventEmitter().emit(
+      'destination.created',
+      new DestinationCreatedEvent({ ...destinationWithId, creationDate: new Date(destinationWithId.creationDate) }),
+    )
 
     return NextResponse.json(destinationWithId, { status: 201 })
   } catch (error) {
